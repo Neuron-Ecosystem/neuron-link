@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neuron Link | Generator</title>
+    <title>Neuron Link | Generator & QR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body {
             background-color: #0d1117;
@@ -19,73 +20,88 @@
             text-align: center;
             padding: 40px;
             border: 1px solid rgba(255, 140, 0, 0.2);
-            border-radius: 20px;
+            border-radius: 24px;
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(15px);
             width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            max-width: 450px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
         }
-        h1 { color: #ff8c00; letter-spacing: 2px; font-weight: 300; margin-bottom: 10px; }
-        p { opacity: 0.6; font-size: 0.9rem; margin-bottom: 25px; }
+        h1 { color: #ff8c00; letter-spacing: 3px; font-weight: 300; margin: 0 0 10px 0; font-size: 1.8rem; }
+        p { opacity: 0.5; font-size: 0.85rem; margin-bottom: 25px; }
         
-        .box { display: flex; flex-direction: column; gap: 15px; }
+        .box { display: flex; flex-direction: column; gap: 12px; }
         
         input {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 16px;
+            border-radius: 12px;
             color: #fff;
             outline: none;
             transition: 0.3s;
             text-align: center;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
-        input:focus { border-color: #ff8c00; }
+        input:focus { border-color: #ff8c00; box-shadow: 0 0 15px rgba(255, 140, 0, 0.1); }
 
         .result-area {
             margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 140, 0, 0.1);
-            border-radius: 10px;
-            border: 1px dashed #ff8c00;
-            display: none; /* Скрыто до генерации */
+            padding: 20px;
+            background: rgba(255, 140, 0, 0.05);
+            border-radius: 16px;
+            border: 1px dashed rgba(255, 140, 0, 0.3);
+            display: none;
+            animation: fadeIn 0.4s ease;
         }
         
         #generated-url {
             color: #ff8c00;
-            font-weight: bold;
+            font-size: 0.85rem;
             word-break: break-all;
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+
+        #qrcode {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 15px;
         }
 
         button {
             background: #ff8c00;
             color: #000;
             border: none;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 16px;
+            border-radius: 12px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
+            font-size: 0.9rem;
         }
         button:hover { background: #ffa534; transform: translateY(-2px); }
         button:active { transform: translateY(0); }
 
-        .secondary-btn {
+        .copy-btn {
             background: transparent;
             border: 1px solid #ff8c00;
             color: #ff8c00;
-            margin-top: 5px;
+            width: 100%;
         }
+        .copy-btn:hover { background: rgba(255, 140, 0, 0.1); }
 
-        /* Экран таймера */
+        /* Экран транзита */
         .timer-view { display: none; }
         .timer-circle { font-size: 5rem; color: #ff8c00; margin: 20px 0; font-weight: bold; }
         
-        .footer { margin-top: 30px; font-size: 0.7rem; opacity: 0.3; letter-spacing: 1px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .footer { margin-top: 30px; font-size: 0.65rem; opacity: 0.3; letter-spacing: 2px; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -93,34 +109,36 @@
 <div class="container">
     <div id="main-view">
         <h1>NEURON LINK</h1>
-        <p>Генератор защищенных путей</p>
+        <p>SECURE URL ENCAPSULATION</p>
         
         <div class="box">
-            <input type="text" id="user-input" placeholder="Вставьте вашу ссылку здесь..." autofocus>
-            <button onclick="generateLink()">Создать анонимную ссылку</button>
+            <input type="text" id="user-input" placeholder="Вставьте ссылку (URL)..." autofocus>
+            <button onclick="generateLink()">СГЕНЕРИРОВАТЬ ПУТЬ</button>
             
             <div id="result-box" class="result-area">
+                <div id="qrcode"></div>
                 <span id="generated-url"></span>
-                <button class="secondary-btn" onclick="copyToClipboard()">Копировать ссылку</button>
+                <button class="copy-btn" onclick="copyToClipboard()" id="copy-status">КОПИРОВАТЬ ССЫЛКУ</button>
             </div>
         </div>
     </div>
 
     <div id="timer-view" class="timer-view">
         <h1>TRANSIT</h1>
-        <p>Очистка метаданных и Referrer...</p>
+        <p>DE-IDENTIFYING CONNECTION...</p>
         <div class="timer-circle" id="timer">3</div>
-        <div id="status">Детоксикация...</div>
+        <div id="status">ОЧИСТКА РЕФЕРЕРА...</div>
     </div>
     
-    <div class="footer">NEURON ECOSYSTEM | 2026</div>
+    <div class="footer">Neuron Ecosystem 2026</div>
 </div>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const targetUrl = urlParams.get('url');
+    let qrContainer = document.getElementById("qrcode");
 
-    // ЛОГИКА ПЕРЕХОДА (Если зашли по ссылке)
+    // 1. ЛОГИКА ПЕРЕХОДА
     if (targetUrl) {
         document.getElementById('main-view').style.display = 'none';
         document.getElementById('timer-view').style.display = 'block';
@@ -131,34 +149,52 @@
             document.getElementById('timer').innerText = timeLeft;
             if(timeLeft <= 0) {
                 clearInterval(timerInt);
-                const a = document.createElement('a');
-                a.href = targetUrl;
-                a.rel = 'noreferrer';
-                a.click();
+                window.location.replace(targetUrl); // Прямой переход с очисткой истории
             }
         }, 1000);
     }
 
-    // ЛОГИКА ГЕНЕРАЦИИ (Если зашли создать ссылку)
+    // 2. ЛОГИКА ГЕНЕРАЦИИ
     function generateLink() {
         let input = document.getElementById('user-input').value.trim();
-        if (!input) return alert("Введите URL!");
+        if (!input) return;
         
-        // Добавляем http если нет
         if (!input.startsWith('http')) input = 'https://' + input;
         
-        // Получаем текущий адрес сайта (link.neuron-p2p.ru)
         const baseUrl = window.location.origin + window.location.pathname;
         const fullLink = `${baseUrl}?url=${encodeURIComponent(input)}`;
         
+        // Показываем результат
         document.getElementById('generated-url').innerText = fullLink;
         document.getElementById('result-box').style.display = 'block';
+        
+        // Очищаем и генерируем QR
+        qrContainer.innerHTML = "";
+        new QRCode(qrContainer, {
+            text: fullLink,
+            width: 160,
+            height: 160,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
     }
 
+    // 3. КОПИРОВАНИЕ
     function copyToClipboard() {
         const text = document.getElementById('generated-url').innerText;
+        const btn = document.getElementById('copy-status');
+        
         navigator.clipboard.writeText(text).then(() => {
-            alert("Ссылка скопирована!");
+            const originalText = btn.innerText;
+            btn.innerText = "СКОПИРОВАНО!";
+            btn.style.borderColor = "#238636";
+            btn.style.color = "#238636";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.borderColor = "#ff8c00";
+                btn.style.color = "#ff8c00";
+            }, 2000);
         });
     }
 </script>
