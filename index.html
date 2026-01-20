@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuron Link | Safe Transit</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #e6edf3;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+        }
+        h1 { color: #ff8c00; letter-spacing: 2px; font-weight: 300; }
+        p { opacity: 0.8; line-height: 1.6; }
+        .timer-circle {
+            font-size: 4rem;
+            color: #ff8c00;
+            margin: 20px 0;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+        }
+        .url-display {
+            font-size: 0.8rem;
+            color: #8b949e;
+            word-break: break-all;
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+        .footer { margin-top: 30px; font-size: 0.7rem; opacity: 0.4; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>NEURON LINK</h1>
+    <p>Вы покидаете защищенный контур.<br>Очистка метаданных и Referrer...</p>
+    
+    <div class="timer-circle" id="timer">3</div>
+    
+    <div id="status">Детоксикация соединения...</div>
+    <div class="url-display" id="url">Ожидание цели...</div>
+    
+    <div class="footer">STATUS: ENCRYPTED TRANSIT | 2026</div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUrl = urlParams.get('url');
+    const timerElement = document.getElementById('timer');
+    const urlElement = document.getElementById('url');
+
+    if (targetUrl) {
+        urlElement.innerText = targetUrl;
+        let timeLeft = 3;
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            timerElement.innerText = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                document.getElementById('status').innerText = "Перенаправление...";
+                // Полная очистка реферера и переход
+                const link = document.createElement('a');
+                link.href = targetUrl;
+                link.rel = 'noreferrer';
+                link.click();
+            }
+        }, 1000);
+    } else {
+        timerElement.innerText = "!";
+        document.getElementById('status').innerText = "Ошибка: URL не найден";
+        urlElement.innerText = "Используйте: link.neuron-p2p.ru/?url=https://site.com";
+    }
+</script>
+
+</body>
+</html>
